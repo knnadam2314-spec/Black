@@ -19,7 +19,7 @@ const client = new Client({
 client.login(process.env.TOKEN);
 
 const SPECIAL_ROLE_ID = "1475799622613205012";
-const AUTO_ROLE_ID = "حط_ايدي_الرتبة_التلقائية";
+const AUTO_ROLE_ID =  "1475744101327568997";
 
 const JOIN_LEAVE_LOG = "1475589765532221450";
 const ROLE_LOG_CHANNEL = "1475603887934406726";
@@ -73,7 +73,6 @@ client.on("guildMemberAdd", async member => {
 
     const log = member.guild.channels.cache.get(JOIN_LEAVE_LOG);
 
-    // رتبة تلقائية
     const autoRole = member.guild.roles.cache.get(AUTO_ROLE_ID);
     if (autoRole) await member.roles.add(autoRole).catch(() => {});
 
@@ -111,7 +110,6 @@ client.on("messageCreate", async message => {
 
     if (!message.guild) return;
     if (message.author.bot) return;
-
     if (!message.content.startsWith("!")) return;
 
     const args = message.content.split(" ");
@@ -120,20 +118,27 @@ client.on("messageCreate", async message => {
     // ===== CLEAR =====
     if (command === "!clear") {
 
+        if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
+            return message.reply("❌ ما عندك صلاحية");
+
         const amount = parseInt(args[1]);
 
         if (!amount || amount < 1 || amount > 100)
-            return message.reply("حط رقم بين 1 و 100");
+            return message.reply("❌ حط رقم بين 1 و 100");
 
-        if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
-            return message.reply("ما عندك صلاحية");
+        await message.channel.bulkDelete(amount + 1, true)
+            .then(() => {
+                message.channel.send(`🧹 تم حذف ${amount} رسالة`)
+                    .then(msg => setTimeout(() => msg.delete(), 3000));
+            })
+            .catch(() => {
+                message.channel.send("❌ ما قدرت احذف الرسائل (يمكن أقدم من 14 يوم)");
+            });
 
-        await message.channel.bulkDelete(amount, true);
-
-        message.channel.send(`🧹 تم حذف ${amount} رسالة`)
-            .then(msg => setTimeout(() => msg.delete(), 3000));
+        return;
     }
 
+    // باقي الأوامر تحتاج Administrator
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
 
     // ===== BAN =====
