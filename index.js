@@ -17,7 +17,9 @@ const client = new Client({
 
 // ================== عدل هون ==================
 client.login(process.env.TOKEN);
+
 const SPECIAL_ROLE_ID = "1475799622613205012";
+const AUTO_ROLE_ID = "حط_ايدي_الرتبة_التلقائية";
 
 const JOIN_LEAVE_LOG = "1475589765532221450";
 const ROLE_LOG_CHANNEL = "1475603887934406726";
@@ -71,6 +73,10 @@ client.on("guildMemberAdd", async member => {
 
     const log = member.guild.channels.cache.get(JOIN_LEAVE_LOG);
 
+    // رتبة تلقائية
+    const autoRole = member.guild.roles.cache.get(AUTO_ROLE_ID);
+    if (autoRole) await member.roles.add(autoRole).catch(() => {});
+
     if (member.user.bot) {
         await member.ban({ reason: "Bots not allowed" });
         return;
@@ -106,19 +112,29 @@ client.on("messageCreate", async message => {
     if (!message.guild) return;
     if (message.author.bot) return;
 
-    // رد بكلمة كود
-    if (message.content === "كود") {
-        return message.reply({
-            content: "الكود ",
-            flags: MessageFlags.SuppressNotifications
-        });
-    }
-
     if (!message.content.startsWith("!")) return;
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
 
     const args = message.content.split(" ");
     const command = args[0].toLowerCase();
+
+    // ===== CLEAR =====
+    if (command === "!clear") {
+
+        const amount = parseInt(args[1]);
+
+        if (!amount || amount < 1 || amount > 100)
+            return message.reply("حط رقم بين 1 و 100");
+
+        if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages))
+            return message.reply("ما عندك صلاحية");
+
+        await message.channel.bulkDelete(amount, true);
+
+        message.channel.send(`🧹 تم حذف ${amount} رسالة`)
+            .then(msg => setTimeout(() => msg.delete(), 3000));
+    }
+
+    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
 
     // ===== BAN =====
     if (command === "!ban") {
@@ -127,7 +143,7 @@ client.on("messageCreate", async message => {
 
         await member.ban();
 
-        message.channel.send(`🔨 بندتو${member}`);
+        message.channel.send(`🔨 بندتو ${member}`);
 
         const modLog = message.guild.channels.cache.get(MOD_LOG_CHANNEL);
         if (modLog) {
@@ -155,8 +171,7 @@ client.on("messageCreate", async message => {
         if (!member) return message.reply("حدد الشخص");
 
         await member.kick();
-
-        message.channel.send(`👢 ككيتو  ${member}`);
+        message.channel.send(`👢 ككيتو ${member}`);
     }
 
     // ===== GIVE ROLE =====
@@ -196,7 +211,6 @@ client.on("messageCreate", async message => {
         );
         message.channel.send(`🔓 تم فتح ${message.channel}`);
     }
-
 });
 
 // ================= تسجيل إعطاء وسحب رتب =================
@@ -236,4 +250,3 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
         });
     });
 });
-
