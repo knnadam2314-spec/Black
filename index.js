@@ -59,7 +59,7 @@ client.on("guildMemberRemove", async member => {
         const modLog = member.guild.channels.cache.get(MOD_LOG_CHANNEL);
         if (modLog) {
             modLog.send({
-                content: `👢 كيك
+                content: `Kick
 👤 العضو: ${member}
 🛠 بواسطة: ${kickLog.executor}`,
                 flags: MessageFlags.SuppressNotifications
@@ -144,11 +144,11 @@ client.on("messageCreate", async message => {
     // ===== BAN =====
     if (command === "!ban") {
         const member = message.mentions.members.first();
-        if (!member) return message.reply("حدد الشخص");
+        if (!member) return message.reply("مش موجود");
 
         await member.ban();
 
-        message.channel.send(`🔨 بندتو ${member}`);
+        message.channel.send(`🔨 Banned ${member}`);
 
         const modLog = message.guild.channels.cache.get(MOD_LOG_CHANNEL);
         if (modLog) {
@@ -167,7 +167,7 @@ client.on("messageCreate", async message => {
         if (!id) return message.reply("حط ID الشخص");
 
         await message.guild.members.unban(id);
-        message.channel.send(`فكيتو <@${id}>`);
+        message.channel.send(`unbanned <@${id}>`);
     }
 
     // ===== KICK =====
@@ -176,7 +176,7 @@ client.on("messageCreate", async message => {
         if (!member) return message.reply("حدد الشخص");
 
         await member.kick();
-        message.channel.send(`👢 ككيتو ${member}`);
+        message.channel.send(`Kick ${member}`);
     }
 
     // ===== GIVE ROLE =====
@@ -255,3 +255,4 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
         });
     });
 });
+
